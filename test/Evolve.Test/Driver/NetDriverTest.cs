@@ -1,17 +1,29 @@
 ﻿using System.Data;
 using Evolve.Driver;
+using Evolve.Test.Utilities;
 using Xunit;
 
 namespace Evolve.Test.Driver
 {
     [Collection("Database collection")]
-    public class NetDriverTest
+    public partial class NetDriverTest
     {
-        private readonly DatabaseFixture _fixture;
+        private readonly MySQLFixture _mySqlfixture;
+        private readonly PostgreSqlFixture _pgFixture;
+        private readonly SQLServerFixture _sqlServerFixture;
 
-        public NetDriverTest(DatabaseFixture fixture)
+        public NetDriverTest(MySQLFixture mySqlfixture, PostgreSqlFixture pgFixture, SQLServerFixture sqlServerFixture)
         {
-            _fixture = fixture;
+            _mySqlfixture = mySqlfixture;
+            _pgFixture = pgFixture;
+            _sqlServerFixture = sqlServerFixture;
+
+            if (!TestContext.Travis && !TestContext.AppVeyor)
+            { // AppVeyor and Windows 2016 does not support linux docker images
+                _mySqlfixture.Start();
+                _pgFixture.Start();
+                _sqlServerFixture.Start();
+            }
         }
 
         [Fact(DisplayName = "Load_ConnectionType_from_an_already_loaded_assembly")]
@@ -24,50 +36,14 @@ namespace Evolve.Test.Driver
             Assert.True(cnn.State == ConnectionState.Open);
         }
 
-        #region CoreDriverConnectionProviderForNet
-
-        [Fact(DisplayName = "CoreMicrosoftDataSqliteDriverForNet_works")]
-        public void CoreMicrosoftDataSqliteDriverForNet_works()
-        {
-            var driver = new CoreMicrosoftDataSqliteDriverForNet(TestContext.DriverResourcesDepsFile, TestContext.NugetPackageFolder);
-            var cnn = driver.CreateConnection("Data Source=:memory:");
-            cnn.Open();
-
-            Assert.True(cnn.State == ConnectionState.Open);
-        }
-
-        [Fact(DisplayName = "CoreNpgsqlDriverForNet_works")]
-        public void CoreNpgsqlDriverForNet_works()
-        {
-
-            var driver = new CoreNpgsqlDriverForNet(TestContext.DriverResourcesDepsFile, TestContext.NugetPackageFolder);
-            var cnn = driver.CreateConnection($"Server=127.0.0.1;Port={_fixture.Pg.HostPort};Database={_fixture.Pg.DbName};User Id={_fixture.Pg.DbUser};Password={_fixture.Pg.DbPwd};");
-            cnn.Open();
-
-            Assert.True(cnn.State == ConnectionState.Open);
-        }
-
-        [Fact(DisplayName = "CoreMySqlDriverForNet_works")]
-        public void CoreMySqlDriverForNet_works()
-        {
-
-            var driver = new CoreMySqlDataDriverForNet(TestContext.DriverResourcesDepsFile, TestContext.NugetPackageFolder);
-            var cnn = driver.CreateConnection($"Server=127.0.0.1;Port={_fixture.MySql.HostPort};Database={_fixture.MySql.DbName};Uid={_fixture.MySql.DbUser};Pwd={_fixture.MySql.DbPwd};");
-            cnn.Open();
-
-            Assert.True(cnn.State == ConnectionState.Open);
-        }
-
         [Fact(DisplayName = "SqlClientDriver_works")]
         public void SqlClientDriver_works()
         {
             var driver = new SqlClientDriver();
-            var cnn = driver.CreateConnection($"Server=127.0.0.1;Database=master;User Id={_fixture.MsSql.DbUser};Password={_fixture.MsSql.DbPwd};");
+            var cnn = driver.CreateConnection($"Server=127.0.0.1;Database=master;User Id={_sqlServerFixture.DbUser};Password={_sqlServerFixture.DbPwd};");
             cnn.Open();
 
             Assert.True(cnn.State == ConnectionState.Open);
         }
-
-        #endregion
     }
 }

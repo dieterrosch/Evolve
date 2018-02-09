@@ -7,15 +7,14 @@ env:
     - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     - DOTNET_CLI_TELEMETRY_OPTOUT: 1
 sudo: required
-mono: none
-dotnet: 1.0.4
-os:
-  - linux
+mono: 5.8.0
+dotnet: 2.1.4
+os: linux
+before_script:
+  - sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
+  - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys B02C46DF417A0893
+  - sudo apt-get update
+  - sudo apt-get install dotnet-dev-1.0.4
+  - chmod a+x ./build.sh
 script:
-  - dotnet restore
-  - dotnet build ./src/Evolve/Evolve.csproj -c Release -f netcoreapp1.0
-  - dotnet build ./test/Evolve.Core.Test/Evolve.Core.Test.csproj -c Release -f netcoreapp1.0
-  - dotnet build ./test/Evolve.Core.Test.Driver/Evolve.Core.Test.Driver.csproj -c Release -f netcoreapp1.0
-  - dotnet build ./test/Evolve.Core.Test.Resources.SupportedDrivers/Evolve.Core.Test.Resources.SupportedDrivers.csproj -c Release -f netcoreapp1.0
-  - dotnet test ./test/Evolve.Core.Test/Evolve.Core.Test.csproj -c Release -f netcoreapp1.0
-  - dotnet test ./test/Evolve.Core.Test.Driver/Evolve.Core.Test.Driver.csproj -c Release -f netcoreapp1.0
+  - ./build.sh

@@ -1,0 +1,7 @@
+﻿{
+  "Evolve.Driver": "Microsoft.Data.Sqlite",
+  "Evolve.ConnectionString": "Data Source=:memory:",
+  "Evolve.Locations": "scripts",
+  "Evolve.Command": "migrate",
+  "Evolve.Placeholder.table4": "table_4"
+}
